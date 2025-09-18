@@ -1,0 +1,6 @@
+praw
+nltk
+flask
+matplotlib
+mysql-connector-python
+python-dotenv
