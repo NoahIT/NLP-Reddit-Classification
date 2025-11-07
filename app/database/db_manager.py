@@ -90,7 +90,6 @@ def insert_batch_data(data_list: List[Dict[str, Any]]):
                 with conn.cursor() as cursor:
                     cursor.executemany(query, batch_params)
                     conn.commit()
-                    # print(f"Successfully inserted/updated {cursor.rowcount} rows.")
     except Error as e:
         print(f"Error during batch insert: {e}")
 
@@ -113,7 +112,9 @@ def query_sentiment_data(subreddit: Optional[str] = None,
         subreddit, 
         created_utc, 
         sentiment_label, 
-        sentiment_score
+        sentiment_score,
+        content, 
+        url
     FROM 
         reddit_data
     WHERE 
@@ -132,6 +133,7 @@ def query_sentiment_data(subreddit: Optional[str] = None,
     try:
         with get_db_connection() as conn:
             if conn:
+                # Using dictionary=True to get results as dicts
                 with conn.cursor(dictionary=True) as cursor:
                     cursor.execute(base_query, tuple(params))
                     results = cursor.fetchall()
@@ -158,3 +160,60 @@ def get_distinct_subreddits() -> List[str]:
         print(f"Error getting distinct subreddits: {e}")
     
     return results
+
+
+def get_kpi_stats() -> Dict[str, Any]:
+    """
+    Calculates key performance indicators (KPIs) for the dashboard.
+    """
+    stats = {}
+    
+    # 1. Total posts in the last 24 hours
+    q_total = "SELECT COUNT(*) FROM reddit_data WHERE created_utc >= NOW() - INTERVAL 24 HOUR"
+    
+    # 2. Average sentiment in the last 24 hours
+    q_avg_sentiment = "SELECT COALESCE(AVG(sentiment_score), 0) FROM reddit_data WHERE created_utc >= NOW() - INTERVAL 24 HOUR"
+    
+    # 3. Most positive subreddit (last 24h)
+    q_most_positive = """
+        SELECT subreddit, AVG(sentiment_score) as avg_score
+        FROM reddit_data
+        WHERE created_utc >= NOW() - INTERVAL 24 HOUR
+        GROUP BY subreddit
+        ORDER BY avg_score DESC
+        LIMIT 1
+    """
+    
+    # 4. Most negative subreddit (last 24h)
+    q_most_negative = """
+        SELECT subreddit, AVG(sentiment_score) as avg_score
+        FROM reddit_data
+        WHERE created_utc >= NOW() - INTERVAL 24 HOUR
+        GROUP BY subreddit
+        ORDER BY avg_score ASC
+        LIMIT 1
+    """
+    
+    try:
+        with get_db_connection() as conn:
+            if conn:
+                with conn.cursor(dictionary=True) as cursor:
+                    cursor.execute(q_total)
+                    stats['total_posts_24h'] = cursor.fetchone()['COUNT(*)']
+                    
+                    cursor.execute(q_avg_sentiment)
+                    stats['avg_sentiment_24h'] = cursor.fetchone()['COALESCE(AVG(sentiment_score), 0)']
+                    
+                    cursor.execute(q_most_positive)
+                    pos_result = cursor.fetchone()
+                    stats['most_positive_sub'] = pos_result if pos_result else {"subreddit": "N/A", "avg_score": 0}
+                    
+                    cursor.execute(q_most_negative)
+                    neg_result = cursor.fetchone()
+                    stats['most_negative_sub'] = neg_result if neg_result else {"subreddit": "N/A", "avg_score": 0}
+                    
+    except Error as e:
+        print(f"Error calculating KPI stats: {e}")
+        return {}
+        
+    return stats

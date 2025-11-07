@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # 1. The MySQL Database Service
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-sentiment-db
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  # 2. The Python App Service (Base for Collector & API)
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - mysql-db
+    env_file: ./.env
+    volumes:
+      - ./app:/usr/src/app/app
+
+  # 3. The Data Collector Service
+  collector:
+    extends:
+      service: app
+    container_name: reddit-collector
+    # We'll keep this polling for keywords to get background data
+    command: ["python", "run_collector.py", "poll", "--keywords", "biden", "trump", "crypto"]
+
+  # 4. The API (Backend) Service
+  api:  # <-- RENAMED from 'dashboard'
+    extends:
+      service: app
+    container_name: reddit-api # <-- RENAMED
+    # Run our new API script
+    command: ["python", "run_api.py"] # <-- UPDATED
+    ports:
+      - "5000:5000"
+
+volumes:
+  mysql-data:

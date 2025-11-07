@@ -1,19 +1,5 @@
 """
 Reddit Data Collector - Entry Point
-
-Usage Examples:
-
-1. Stream all NEW comments from r/python:
-   python run_collector.py stream --subreddit python --type comment
-
-2. Stream all NEW posts from r/datascience:
-   python run_collector.py stream --subreddit datascience --type post
-
-3. Poll for keywords 'tesla' or 'elon' across all of Reddit (default):
-   python run_collector.py poll --keywords tesla elon
-
-4. Poll for keywords 'stocks' or 'market' in specific subreddits:
-   python run_collector.py poll --keywords stocks market --subreddits wallstreetbets investing
 """
 
 import argparse
