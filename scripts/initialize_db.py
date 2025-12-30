@@ -1,9 +1,3 @@
-"""
-Database Initialization Script
-
-This script connects to the MySQL server, creates the database (if it
-doesn't exist), and executes the table creation commands from schema.sql.
-"""
 
 import sys
 import os
@@ -15,9 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app import config
 
 def create_database_and_tables():
-    """
-    Connects to MySQL, creates the database, and executes the schema.
-    """
+
     try:
         conn = mysql.connector.connect(
             host=config.DB_HOST,

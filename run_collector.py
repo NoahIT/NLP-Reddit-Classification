@@ -2,9 +2,14 @@
 Reddit Data Collector - Entry Point
 """
 
+import eventlet
+eventlet.monkey_patch()
+
 import argparse
 import sys
-from app.data_collection import collector
+from app.data_collection.collector import RedditCollector
+from app.database.db_manager import db_manager
+from app.nlp.analyzer import analyzer
 
 def main():
     """
@@ -64,14 +69,14 @@ def main():
     args = parser.parse_args()
 
     try:
-        print("Initializing PRAW...")
-        reddit = collector.get_reddit_instance()
-        print("PRAW initialized.")
+        print("Initializing Collector Service...")
+        # Dependency Injection
+        collector = RedditCollector(db_manager, analyzer)
+        print("Collector Service initialized.")
 
         if args.command == 'stream':
             print(f"Starting 'stream' mode for r/{args.subreddit} ({args.type}s)...")
             collector.process_stream(
-                reddit=reddit,
                 subreddit_name=args.subreddit,
                 item_type=args.type,
                 batch_size=args.batch_size
@@ -80,7 +85,6 @@ def main():
         elif args.command == 'poll':
             print(f"Starting 'poll' mode...")
             collector.poll_keywords(
-                reddit=reddit,
                 keywords=args.keywords,
                 subreddits=args.subreddits,
                 poll_interval=args.interval,

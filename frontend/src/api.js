@@ -10,19 +10,30 @@ const apiClient = axios.create({
 
 export default {
   // --- Data Getter Endpoints ---
-  getData: (subreddit = null) => {
+  getData: (subreddit = null, timeframe = null, keywords = null, subreddits = null) => {
     let url = '/data';
-    if (subreddit) {
-      url += `?subreddit=${subreddit}`;
+    const params = new URLSearchParams();
+    if (subreddit) params.append('subreddit', subreddit);
+    if (timeframe) params.append('timeframe', timeframe);
+    if (keywords) params.append('keywords', keywords);
+    if (subreddits && subreddits.length > 0) params.append('subreddits', subreddits.join(','));
+
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
     }
     return apiClient.get(url);
   },
-  
+
   getSubreddits: () => {
     return apiClient.get('/subreddits');
   },
 
- getStats: () => {
+  getGroups: () => {
+    return apiClient.get('/groups');
+  },
+
+  getStats: () => {
     return apiClient.get('/stats');
   },
 

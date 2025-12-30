@@ -7,37 +7,50 @@
 
 .stat-card {
   padding: 1.5rem;
-  border-left: 5px solid var(--primary-color);
+  border-left: 5px solid var(--primary);
 }
+
 .stat-card h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
-  color: var(--secondary-color);
+  color: var(--text-muted);
   font-weight: 500;
 }
+
 .stat-card .stat-value {
   font-size: 1.75rem;
   font-weight: 600;
   margin: 0;
-  color: var(--text-color);
-  /* Truncate long subreddit names */
+  color: var(--text-light);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.stat-value .sentiment-positive {
+  color: #40c060;
+}
+
+.stat-value .sentiment-negative {
+  color: #f86c6c;
+}
+
+.stat-value .sentiment-neutral {
+  color: var(--text-muted);
+}
+
 .stats-bar-loading {
   text-align: center;
   padding: 2rem;
-  color: var(--secondary-color);
+  color: var(--text-muted);
 }
 
-/* Responsive layout for stats */
 @media (max-width: 900px) {
   .stats-bar-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
+
 @media (max-width: 500px) {
   .stats-bar-grid {
     grid-template-columns: 1fr;

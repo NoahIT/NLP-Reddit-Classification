@@ -1,13 +1,18 @@
 import React from 'react';
-import './EmptyState.css'; // We can reuse the same CSS
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../i18n/translations';
+import './EmptyState.css';
 
 function ErrorState({ message }) {
+  const { language } = useLanguage();
+  const t = useTranslation(language);
+
   return (
     <div className="empty-state-container card" style={{ borderColor: 'var(--danger-color)' }}>
-      <h2 style={{ color: 'var(--danger-color)' }}>An Error Occurred</h2>
-      <p>We ran into a problem while trying to load your data.</p>
+      <h2 style={{ color: 'var(--danger-color)' }}>{t('errorOccurred')}</h2>
+      <p>{t('errorMessage')}</p>
       <p>
-        <strong>Error:</strong> {message || 'An unknown error occurred.'}
+        <strong>{t('error')}:</strong> {message || t('unknownError')}
       </p>
     </div>
   );

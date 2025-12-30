@@ -1,19 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../i18n/translations';
 import './EmptyState.css';
 
 function EmptyState() {
+  const { language } = useLanguage();
+  const t = useTranslation(language);
+
   return (
     <div className="empty-state-container card">
-      <h2>No Data Found</h2>
-      <p>We couldn't find any data for the selected time period.</p>
-      <p>
-        Try fetching new data from the{' '}
-        <Link to="/tools" className="tools-link">
-          Data Tools page
-        </Link>
-        .
-      </p>
+      <h2>{t('noData')}</h2>
+      <p>{t('noDataMessage')}</p>
     </div>
   );
 }

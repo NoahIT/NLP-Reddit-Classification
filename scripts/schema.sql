@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS reddit_data (
     created_utc DATETIME NOT NULL,
     sentiment_label ENUM('positive', 'negative', 'neutral') NOT NULL,
     sentiment_score FLOAT NOT NULL,
+    score INT DEFAULT 0,
+    num_comments INT DEFAULT 0,
     processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

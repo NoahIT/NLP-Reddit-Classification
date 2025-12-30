@@ -1,57 +1,72 @@
-"""
-Defines the routes for the JSON API.
-"""
 from flask import Flask, jsonify, request
 from . import api_bp
-from app.database import db_manager
-from app.utils import on_demand_fetch
+from app.database.db_manager import db_manager
+from app.nlp.analyzer import analyzer
+from app.data_collection.collector import RedditCollector
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+collector_service = RedditCollector(db_manager, analyzer)
 
 @api_bp.route('/status', methods=['GET'])
 def get_status():
-    """Simple health-check endpoint."""
     return jsonify({"status": "ok", "service": "Reddit Sentiment API"})
 
 @api_bp.route('/data', methods=['GET'])
 def get_data():
-    """
-    Main data endpoint.
-    Returns all processed items, optionally filtered by subreddit.
-    
-    Query Params:
-    ?subreddit=news
-    ?limit=1000
-    """
+   
     subreddit = request.args.get('subreddit', None)
-    limit = int(request.args.get('limit', 5000)) 
+    
+    subreddits_arg = request.args.get('subreddits', None)
+    subreddits = None
+    if subreddits_arg:
+        subreddits = [s.strip() for s in subreddits_arg.split(',') if s.strip()]
+
+    keywords = request.args.get('keywords', None)
+
+    try:
+        timeframe = int(request.args.get('timeframe', 24 * 7))
+    except ValueError:
+        timeframe = 24 * 7
+        
     data = db_manager.query_sentiment_data(
         subreddit=subreddit,
-        timeframe_hours=24 * 7 # Look back 1 week
+        subreddits=subreddits,
+        keywords=keywords,
+        timeframe_hours=timeframe
     )
     for item in data:
-        item['created_utc'] = item['created_utc'].isoformat()
+        if item.get('created_utc'):
+            item['created_utc'] = item['created_utc'].isoformat()
         
     return jsonify(data)
 
 @api_bp.route('/subreddits', methods=['GET'])
 def get_subreddits():
-    """
-    Returns a list of all unique subreddits in the database.
-    """
     subreddits = db_manager.get_distinct_subreddits()
     return jsonify(subreddits)
 
+@api_bp.route('/groups', methods=['GET'])
+def get_groups():
+    groups = {
+        "Tech": ["technology", "programming", "hardware", "software", "gadgets"],
+        "News": ["news", "worldnews", "politics", "science"],
+        "Crypto": ["bitcoin", "cryptocurrency", "ethereum", "dogecoin"],
+        "Finance": ["finance", "investing", "wallstreetbets", "stocks"],
+        "Entertainment": ["movies", "music", "gaming", "books", "television"]
+    }
+    return jsonify(groups)
+
 @api_bp.route('/fetch/subreddit', methods=['POST'])
 def fetch_subreddit():
-    """
-    Triggers an on-demand fetch for a specific subreddit.
-    Expects JSON: {"subreddit": "python"}
-    """
     data = request.get_json()
     if not data or 'subreddit' not in data:
         return jsonify({"status": "error", "message": "Missing 'subreddit' in JSON body"}), 400
         
     subreddit_name = data['subreddit']
-    result = on_demand_fetch.fetch_subreddit_posts(subreddit_name)
+    result = collector_service.fetch_subreddit_posts(subreddit_name)
     
     if result['status'] == 'error':
         return jsonify(result), 500
@@ -59,10 +74,7 @@ def fetch_subreddit():
 
 @api_bp.route('/fetch/random', methods=['POST'])
 def fetch_random():
-    """
-    Triggers an on-demand fetch for random subreddits.
-    """
-    result = on_demand_fetch.fetch_random_posts()
+    result = collector_service.fetch_random_posts()
     
     if result['status'] == 'error':
         return jsonify(result), 500
@@ -70,8 +82,5 @@ def fetch_random():
 
 @api_bp.route('/stats', methods=['GET'])
 def get_stats():
-    """
-    Returns a dictionary of key performance indicators (KPIs).
-    """
     stats = db_manager.get_kpi_stats()
     return jsonify(stats)

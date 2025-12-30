@@ -1,11 +1,13 @@
 """
 Application Factory
-
-This file creates and configures the Flask application.
 """
 from flask import Flask
 from flask_cors import CORS
+from flask_socketio import SocketIO
 from app import config
+
+# 1. Initialize SocketIO here
+socketio = SocketIO()
 
 def create_app():
     """
@@ -13,9 +15,11 @@ def create_app():
     """
     app = Flask(__name__)
     
-    # Configure CORS to allow our React frontend to make requests
-    # In production, you'd lock this down to your frontend's domain.
+    # 2. Configure CORS for both the app and Socket.IO
     CORS(app, resources={r"/api/*": {"origins": "*"}})
+    
+    # 3. Initialize SocketIO with the app and Redis message queue
+    socketio.init_app(app, message_queue=config.REDIS_URL, cors_allowed_origins="*")
 
     # Register the API blueprint
     from .api import api_bp
@@ -25,4 +29,5 @@ def create_app():
     def health_check():
         return "API is running. Access data at /api/data"
 
-    return app
+    # 4. Return both app and socketio
+    return app, socketio

@@ -1,15 +1,18 @@
 """
 API Server - Entry Point
-
-Run this script to start the Flask API server.
 """
-from app import create_app
+import eventlet
+eventlet.monkey_patch() # Must be at the very top
 
-app = create_app()
+from app import create_app
+from app.config import DEBUG
+
+print("Creating Flask app and SocketIO...")
+app, socketio = create_app()
 
 if __name__ == "__main__":
-    print("Starting Flask API server...")
-    print("API will be available at http://127.0.0.1:5000/")
+    print("Starting Flask-SocketIO server with Eventlet...")
+    print(f"API will be available at http://127.0.0.1:5000/ (Debug: {DEBUG})")
     
-    # Host must be 0.0.0.0 to be accessible from outside the Docker container
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use socketio.run to start the WebSocket server
+    socketio.run(app, host='0.0.0.0', port=5000, debug=DEBUG)

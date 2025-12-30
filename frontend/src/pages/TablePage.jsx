@@ -2,23 +2,26 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../api';
 import PostTable from '../components/PostTable';
 
-// --- NEW IMPORTS ---
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../i18n/translations';
 
 
 function TablePage() {
+  const { language } = useLanguage();
+  const t = useTranslation(language);
+
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // --- NEW STATE ---
+
   const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    
+
     apiClient.getData()
       .then(response => {
         setRowData(response.data);
@@ -31,15 +34,14 @@ function TablePage() {
       });
   }, []);
 
-  // --- NEW RENDER LOGIC ---
   if (loading) return <LoadingSpinner />;
-  
+
   if (error) return <ErrorState message={error} />;
 
   if (rowData.length === 0) {
     return (
       <div>
-        <h1>Full Data Table</h1>
+        <h1>{t('fullDataTable')}</h1>
         <EmptyState />
       </div>
     );
@@ -47,8 +49,8 @@ function TablePage() {
 
   return (
     <div>
-      <h1>Full Data Table</h1>
-      <p>Showing all {rowData.length} items from the last 7 days.</p>
+      <h1>{t('fullDataTable')}</h1>
+      <p>{t('showingAllItems')} {rowData.length} {t('fromLast7Days')}</p>
       <div className="card">
         <PostTable rowData={rowData} />
       </div>

@@ -1,0 +1,82 @@
+.sidebar-nav {
+    position: fixed;
+    left: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    background: transparent;
+}
+
+.sidebar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sidebar-item {
+    position: relative;
+}
+
+.sidebar-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    position: relative;
+    outline: none;
+}
+
+.sidebar-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+}
+
+.sidebar-btn:hover .sidebar-circle {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(1.2);
+}
+
+.sidebar-btn.active .sidebar-circle {
+    background: var(--primary, #6200EE);
+    border-color: var(--primary, #6200EE);
+    transform: scale(1.3);
+    box-shadow: 0 0 10px rgba(98, 0, 238, 0.5);
+}
+
+.sidebar-label {
+    position: absolute;
+    left: 24px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.sidebar-btn:hover .sidebar-label,
+.sidebar-btn.active .sidebar-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+@media (max-width: 1200px) {
+    .sidebar-nav {
+        display: none;
+        /* Hide on smaller screens */
+    }
+}

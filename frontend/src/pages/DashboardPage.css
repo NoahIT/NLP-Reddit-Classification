@@ -1,43 +1,117 @@
 .filter-bar {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .filter-bar label {
   font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
-.filter-bar select {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 0.95rem;
+.filter-bar select,
+.filter-bar input {
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s;
+  min-width: 150px;
+}
+
+.filter-bar select:focus,
+.filter-bar input:focus {
+  border-color: var(--primary);
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
 }
 
 .clear-filter-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  background-color: #6c757d;
-  color: white;
-  font-size: 0.95rem;
-  font-weight: 500;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff453a;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  margin-left: auto;
 }
+
 .clear-filter-btn:hover {
-  background-color: #5a6268;
+  background: rgba(255, 59, 48, 0.2);
+  transform: translateY(-1px);
 }
 
-.plot-grid {
+.dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-/* Make grid stack on smaller screens */
-@media (max-width: 900px) {
-  .plot-grid {
+.dashboard-grid .span-two {
+  grid-column: span 2;
+}
+
+.dashboard-grid .span-full {
+  grid-column: 1 / -1;
+}
+
+/* Remove padding from glass-panel when used with collapsible card to avoid double padding */
+.collapsible-card.glass-panel {
+  padding: 0;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid .span-two {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar label {
+    margin-bottom: 0.25rem;
+  }
+
+  .clear-filter-btn {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+    margin-top: 0.5rem;
   }
 }
