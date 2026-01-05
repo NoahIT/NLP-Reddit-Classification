@@ -82,5 +82,24 @@ def fetch_random():
 
 @api_bp.route('/stats', methods=['GET'])
 def get_stats():
-    stats = db_manager.get_kpi_stats()
+    subreddit = request.args.get('subreddit', None)
+    
+    subreddits_arg = request.args.get('subreddits', None)
+    subreddits = None
+    if subreddits_arg:
+        subreddits = [s.strip() for s in subreddits_arg.split(',') if s.strip()]
+
+    keywords = request.args.get('keywords', None)
+
+    try:
+        timeframe = int(request.args.get('timeframe', 24 * 7))
+    except ValueError:
+        timeframe = 24 * 7
+
+    stats = db_manager.get_kpi_stats(
+        subreddit=subreddit,
+        subreddits=subreddits,
+        keywords=keywords,
+        timeframe_hours=timeframe
+    )
     return jsonify(stats)

@@ -30,13 +30,24 @@ class TestAPI(unittest.TestCase):
     @patch('app.database.db_manager.DatabaseManager.get_kpi_stats')
     def test_get_stats(self, mock_get_kpi_stats):
         mock_get_kpi_stats.return_value = {
-            'total_posts_24h': 100,
-            'avg_sentiment_24h': 0.5
+            'total_posts': 100,
+            'avg_sentiment': 0.5
         }
+        
+        # Test basic call
         response = self.client.get('/api/stats')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
-        self.assertEqual(data['total_posts_24h'], 100)
+        self.assertEqual(data['total_posts'], 100)
+        
+        # Test with params
+        self.client.get('/api/stats?subreddit=test&timeframe=48')
+        mock_get_kpi_stats.assert_called_with(
+            subreddit='test',
+            subreddits=None,
+            keywords=None,
+            timeframe_hours=48
+        )
 
     @patch('app.database.db_manager.DatabaseManager.get_distinct_subreddits')
     def test_get_subreddits(self, mock_get_subreddits):

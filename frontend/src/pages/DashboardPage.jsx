@@ -50,6 +50,27 @@ function DashboardPage() {
   const [isTopChartsCollapsed, setIsTopChartsCollapsed] = useState(false);
   const [error, setError] = useState(null);
 
+  // Fetch Subreddit State
+  const [fetchInput, setFetchInput] = useState('');
+  const [isFetching, setIsFetching] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleFetchSubreddit = () => {
+    if (!fetchInput) return;
+    setIsFetching(true);
+    apiClient.fetchSubreddit(fetchInput)
+      .then(() => {
+        setFetchInput('');
+        setRefreshTrigger(prev => prev + 1);
+        setIsFetching(false);
+      })
+      .catch(err => {
+        console.error("Error fetching subreddit:", err);
+        setError(err.message || "Failed to fetch subreddit");
+        setIsFetching(false);
+      });
+  };
+
   // Debounce keywords to avoid too many API calls
   const [debouncedKeywords, setDebouncedKeywords] = useState(keywords);
 
@@ -60,15 +81,17 @@ function DashboardPage() {
     return () => clearTimeout(timer);
   }, [keywords]);
 
+  // Determine subreddits list based on group selection
+  const subredditsToFetch = useMemo(() => {
+    if (selectedGroup && availableGroups[selectedGroup]) {
+      return availableGroups[selectedGroup];
+    }
+    return null;
+  }, [selectedGroup, availableGroups]);
+
   useEffect(() => {
     setLoading(true);
     setError(null);
-
-    // Determine subreddits list based on group selection
-    let subredditsToFetch = null;
-    if (selectedGroup && availableGroups[selectedGroup]) {
-      subredditsToFetch = availableGroups[selectedGroup];
-    }
 
     Promise.all([
       apiClient.getData(selectedSubreddit, null, debouncedKeywords, subredditsToFetch),
@@ -86,7 +109,7 @@ function DashboardPage() {
         setError(error.message);
         setLoading(false);
       });
-  }, [selectedSubreddit, selectedGroup, debouncedKeywords]); // Re-fetch when filters change
+  }, [selectedSubreddit, selectedGroup, debouncedKeywords, subredditsToFetch, refreshTrigger]); // Re-fetch when filters change
 
   const dataForPlots = useMemo(() => {
     let data = allData;
@@ -117,7 +140,12 @@ function DashboardPage() {
       <motion.h1 variants={cardVariant}>{t('dashboard')}</motion.h1>
 
       {/* --- ADD STATS BAR --- */}
-      <StatsBar />
+      <StatsBar
+        subreddit={selectedSubreddit}
+        keywords={debouncedKeywords}
+        subreddits={subredditsToFetch}
+        refreshTrigger={refreshTrigger}
+      />
 
       {/* --- Filter Bar --- */}
       <motion.div className="card filter-bar glass-panel" variants={cardVariant}>
@@ -176,6 +204,28 @@ function DashboardPage() {
             onChange={(e) => setMinScore(e.target.value)}
             className="score-input"
           />
+        </div>
+
+        <div className="filter-group fetch-group">
+          <label htmlFor="fetch-subreddit-input">{t('fetchSubreddit')}:</label>
+          <div className="fetch-input-wrapper">
+            <input
+              id="fetch-subreddit-input"
+              type="text"
+              placeholder={t('enterSubreddit')}
+              value={fetchInput}
+              onChange={(e) => setFetchInput(e.target.value)}
+              className="keyword-input"
+              disabled={isFetching}
+            />
+            <button
+              onClick={handleFetchSubreddit}
+              className="fetch-btn"
+              disabled={!fetchInput || isFetching}
+            >
+              {isFetching ? t('collecting') : 'Go'}
+            </button>
+          </div>
         </div>
 
         {(selectedSubreddit || selectedGroup || keywords || minScore) && (

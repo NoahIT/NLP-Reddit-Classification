@@ -21,19 +21,25 @@ const cardVariant = {
 };
 
 function formatSentiment(score, t) {
-  if (score > 0.2) return <span className="sentiment-positive">{t('positive')} ({score.toFixed(2)})</span>;
-  if (score < -0.2) return <span className="sentiment-negative">{t('negative')} ({score.toFixed(2)})</span>;
-  return <span className="sentiment-neutral">{t('neutral')} ({score.toFixed(2)})</span>;
+  const numericScore = Number(score);
+  if (isNaN(numericScore)) {
+    return <span className="sentiment-neutral">{t('neutral')} (0.00)</span>;
+  }
+  if (numericScore > 0.2) return <span className="sentiment-positive">{t('positive')} ({numericScore.toFixed(2)})</span>;
+  if (numericScore < -0.2) return <span className="sentiment-negative">{t('negative')} ({numericScore.toFixed(2)})</span>;
+  return <span className="sentiment-neutral">{t('neutral')} ({numericScore.toFixed(2)})</span>;
 }
 
-function StatsBar() {
+function StatsBar({ subreddit, keywords, subreddits, refreshTrigger }) {
   const { language } = useLanguage();
   const t = useTranslation(language);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiClient.getStats()
+    setLoading(true);
+    // null for timeframe implies backend default (7 days)
+    apiClient.getStats(subreddit, null, keywords, subreddits)
       .then(response => {
         setStats(response.data);
         setLoading(false);
@@ -42,7 +48,7 @@ function StatsBar() {
         console.error("Error fetching stats:", err);
         setLoading(false);
       });
-  }, []);
+  }, [subreddit, keywords, subreddits, refreshTrigger]);
 
   if (loading || !stats) {
     return (
@@ -61,13 +67,13 @@ function StatsBar() {
     >
       <motion.div className="card stat-card glass-panel" variants={cardVariant}>
         <h3>{t('totalPosts')}</h3>
-        <p className="stat-value">{stats.total_posts_24h}</p>
-        <span className="stat-label">Last 24 Hours</span>
+        <p className="stat-value">{stats.total_posts}</p>
+        <span className="stat-label">In Current View</span>
       </motion.div>
       <motion.div className="card stat-card glass-panel" variants={cardVariant}>
         <h3>{t('avgSentiment')}</h3>
-        <p className="stat-value">{formatSentiment(stats.avg_sentiment_24h, t)}</p>
-        <span className="stat-label">Global Average</span>
+        <p className="stat-value">{formatSentiment(stats.avg_sentiment, t)}</p>
+        <span className="stat-label">Average Sentiment</span>
       </motion.div>
       <motion.div className="card stat-card glass-panel" variants={cardVariant}>
         <h3>{t('mostCommon')} {t('positive')}</h3>

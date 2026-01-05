@@ -185,25 +185,55 @@ class DatabaseManager:
         
         return results
 
-    def get_kpi_stats(self) -> Dict[str, Any]:
+    def get_kpi_stats(self, subreddit: Optional[str] = None,
+                      subreddits: Optional[List[str]] = None,
+                      keywords: Optional[str] = None,
+                      timeframe_hours: int = 24) -> Dict[str, Any]:
         stats = {}
         
-        q_total = "SELECT COUNT(*) as count FROM reddit_data WHERE created_utc >= NOW() - INTERVAL 24 HOUR"
-        q_avg_sentiment = "SELECT COALESCE(AVG(sentiment_score), 0) as avg_score FROM reddit_data WHERE created_utc >= NOW() - INTERVAL 24 HOUR"
+        # Build the dynamic WHERE clause
+        where_clauses = ["created_utc >= NOW() - INTERVAL %s HOUR"]
+        params = [timeframe_hours]
+
+        if subreddit:
+            where_clauses.append("subreddit = %s")
+            params.append(subreddit)
         
-        q_most_positive = """
+        if subreddits and len(subreddits) > 0:
+            placeholders = ', '.join(['%s'] * len(subreddits))
+            where_clauses.append(f"subreddit IN ({placeholders})")
+            params.extend(subreddits)
+
+        if keywords:
+            keyword_list = [k.strip() for k in keywords.split(',') if k.strip()]
+            if keyword_list:
+                keyword_conditions = []
+                for k in keyword_list:
+                    keyword_conditions.append("(content LIKE %s OR subreddit LIKE %s)")
+                    params.extend([f"%{k}%", f"%{k}%"])
+                
+                if keyword_conditions:
+                    where_clauses.append("(" + " OR ".join(keyword_conditions) + ")")
+        
+        where_str = " AND ".join(where_clauses)
+        
+        # Define base queries with the dynamic WHERE clause
+        q_total = f"SELECT COUNT(*) as count FROM reddit_data WHERE {where_str}"
+        q_avg_sentiment = f"SELECT COALESCE(AVG(sentiment_score), 0) as avg_score FROM reddit_data WHERE {where_str}"
+        
+        q_most_positive = f"""
             SELECT subreddit, AVG(sentiment_score) as avg_score
             FROM reddit_data
-            WHERE created_utc >= NOW() - INTERVAL 24 HOUR
+            WHERE {where_str}
             GROUP BY subreddit
             ORDER BY avg_score DESC
             LIMIT 1
         """
         
-        q_most_negative = """
+        q_most_negative = f"""
             SELECT subreddit, AVG(sentiment_score) as avg_score
             FROM reddit_data
-            WHERE created_utc >= NOW() - INTERVAL 24 HOUR
+            WHERE {where_str}
             GROUP BY subreddit
             ORDER BY avg_score ASC
             LIMIT 1
@@ -213,17 +243,21 @@ class DatabaseManager:
             with self.get_connection() as conn:
                 if conn:
                     with conn.cursor(dictionary=True) as cursor:
-                        cursor.execute(q_total)
-                        stats['total_posts_24h'] = cursor.fetchone()['count']
+                        # Total Posts
+                        cursor.execute(q_total, tuple(params))
+                        stats['total_posts'] = cursor.fetchone()['count']
                         
-                        cursor.execute(q_avg_sentiment)
-                        stats['avg_sentiment_24h'] = cursor.fetchone()['avg_score']
+                        # Avg Sentiment
+                        cursor.execute(q_avg_sentiment, tuple(params))
+                        stats['avg_sentiment'] = cursor.fetchone()['avg_score']
                         
-                        cursor.execute(q_most_positive)
+                        # Most Positive
+                        cursor.execute(q_most_positive, tuple(params))
                         pos_result = cursor.fetchone()
                         stats['most_positive_sub'] = pos_result if pos_result else {"subreddit": "N/A", "avg_score": 0}
                         
-                        cursor.execute(q_most_negative)
+                        # Most Negative
+                        cursor.execute(q_most_negative, tuple(params))
                         neg_result = cursor.fetchone()
                         stats['most_negative_sub'] = neg_result if neg_result else {"subreddit": "N/A", "avg_score": 0}
                         
