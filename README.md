@@ -1,61 +1,61 @@
-# NLP Reddit Classification & Sentiment Analysis
+# NLP Reddit Klasifikavimas ir Sentimentų Analizė
 
-A full-stack application that collects posts and comments from Reddit, performs sentiment analysis using Natural Language Processing (NLP), and visualizes the data in real-time.
+Pilna programinė įranga, kuri renka įrašus ir komentarus iš Reddit, atlieka sentimentų analizę naudojant natūralios kalbos apdorojimą (NLP) ir vizualizuoja duomenis realiuoju laiku.
 
-## Table of Contents
+## Turinys
 
-- [Project Overview](#project-overview)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation & Setup](#installation--setup)
-  - [1. Backend Setup](#1-backend-setup)
-  - [2. Database Setup](#2-database-setup)
-  - [3. Frontend Setup](#3-frontend-setup)
-- [Running the Application](#running-the-application)
-  - [Option A: Running with Docker (Recommended)](#option-a-running-with-docker-recommended)
-  - [Option B: Running Manually](#option-b-running-manually)
-- [Project Structure](#project-structure)
+- [Projekto Apžvalga](#projekto-apžvalga)
+- [Technologijų Rinkinys](#technologijų-rinkinys)
+- [Reikalavimai](#reikalavimai)
+- [Diegimas ir Nustatymas](#diegimas-ir-nustatymas)
+  - [1. Backend Nustatymas](#1-backend-nustatymas)
+  - [2. Duomenų Bazės Nustatymas](#2-duomenų-bazės-nustatymas)
+  - [3. Frontend Nustatymas](#3-frontend-nustatymas)
+- [Programos Paleidimas](#programos-paleidimas)
+  - [A variantas: Paleidimas su Docker (Rekomenduojama)](#a-variantas-paleidimas-su-docker-rekomenduojama)
+  - [B variantas: Paleidimas Rankiniu Būdu](#b-variantas-paleidimas-rankiniu-būdu)
+- [Projekto Struktūra](#projekto-struktūra)
 
-## Project Overview
+## Projekto Apžvalga
 
-This project consists of three main components:
+Šį projektą sudaro trys pagrindiniai komponentai:
 
-1. **Data Collector**: A Python service that connects to the Reddit API, streams comments/posts in real-time, or polls for specific keywords.
-2. **Analysis Engine**: Processes the text data using VADER (Valence Aware Dictionary and sEntiment Reasoner) to determine if the sentiment is Positive, Negative, or Neutral.
-3. **Dashboard**: A React-based frontend that displays live statistics, sentiment trends, and recent posts.
+1. **Duomenų Rinkiklis**: Python paslauga, kuri prisijungia prie Reddit API, transliuoja komentarus/įrašus realiuoju laiku arba ieško konkrečių raktažodžių.
+2. **Analizės Sistema**: Apdoroja tekstinius duomenis naudodama VADER (Valence Aware Dictionary and sEntiment Reasoner), kad nustatytų, ar sentimentas yra Teigiamas, Neigiamas ar Neutralus.
+3. **Valdymo Skydas**: React pagrindu sukurta svetainė, kuri rodo gyvą statistiką, sentimentų tendencijas ir naujausius įrašus.
 
-## Tech Stack
+## Technologijų Rinkinys
 
 - **Backend**: Python, Flask, PRAW (Reddit API), NLTK (NLP)
-- **Frontend**: React (Vite), Plotly.js, TailwindCSS (implied via class usage)
-- **Database**: MySQL
-- **Messaging**: Redis (for WebSocket communication)
-- **Containerization**: Docker & Docker Compose
+- **Frontend**: React (Vite), Plotly.js, TailwindCSS (naudojamas per klases)
+- **Duomenų bazė**: MySQL
+- **Pranešimai**: Redis (WebSocket komunikacijai)
+- **Konteinerizacija**: Docker ir Docker Compose
 
-## Prerequisites
+## Reikalavimai
 
-Before starting, ensure you have the following installed on your machine:
+Prieš pradedant, įsitikinkite, kad jūsų kompiuteryje įdiegta:
 
-1. **Python 3.8+**: [Download Python](https://www.python.org/downloads/)
-2. **Node.js & npm** (for the frontend): [Download Node.js](https://nodejs.org/)
-3. **Docker Desktop** (easiest way to run database & Redis): [Download Docker](https://www.docker.com/products/docker-desktop/)
-4. **Git**: [Download Git](https://git-scm.com/)
+1. **Python 3.8+**: [Atsisiųsti Python](https://www.python.org/downloads/)
+2. **Node.js ir npm** (frontend'ui): [Atsisiųsti Node.js](https://nodejs.org/)
+3. **Docker Desktop** (paprasčiausias būdas paleisti duomenų bazę ir Redis): [Atsisiųsti Docker](https://www.docker.com/products/docker-desktop/)
+4. **Git**: [Atsisiųsti Git](https://git-scm.com/)
 
 ---
 
-## Installation & Setup
+## Diegimas ir Nustatymas
 
-### 1. Backend Setup
+### 1. Backend Nustatymas
 
-1. **Clone the repository** (if you haven't already):
+1. **Klonuokite saugyklą** (jei dar to nepadarėte):
 
     ```bash
     git clone <repository_url>
     cd NLP-Reddit-Classification
     ```
 
-2. **Create a Virtual Environment**:
-    This isolates your Python dependencies.
+2. **Sukurkite Virtualią Aplinką**:
+    Tai izoliuoja jūsų Python priklausomybes.
 
     ```bash
     # Windows
@@ -67,30 +67,30 @@ Before starting, ensure you have the following installed on your machine:
     source .venv/bin/activate
     ```
 
-3. **Install Python Dependencies**:
+3. **Įdiekite Python Priklausomybes**:
 
     ```bash
     pip install -r requirements.txt
     ```
 
-4. **Environment Variables**:
-    Create a file named `.env` in the root directory. You will need Reddit API credentials.
-    > **To get Reddit Credentials:**
-    > 1. Go to [https://www.reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)
-    > 2. Click "create another app..."
-    > 3. Select **script**.
-    > 4. Use `http://localhost:8080` as the redirect uri (doesn't matter much for script apps).
-    > 5. Copy the **ID** (under the name) and **Secret**.
+4. **Aplinkos Kintamieji**:
+    Sukurkite failą pavadinimu `.env` šakniniame kataloge. Jums reikės Reddit API prisijungimo duomenų.
+    > **Kaip gauti Reddit Prisijungimo Duomenis:**
+    > 1. Eikite į [https://www.reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)
+    > 2. Paspauskite "create another app..."
+    > 3. Pasirinkite **script**.
+    > 4. Naudokite `http://localhost:8080` kaip redirect uri (script programoms tai nėra labai svarbu).
+    > 5. Nukopijuokite **ID** (po pavadinimu) ir **Secret**.
 
-    **Add the following to your `.env` file:**
+    **Pridėkite šią informaciją į savo `.env` failą:**
 
     ```ini
-    # Reddit API Keys
-    REDDIT_CLIENT_ID=your_client_id_here
-    REDDIT_CLIENT_SECRET=your_client_secret_here
-    REDDIT_USER_AGENT=python:nlp-sentiment:v1.0 (by /u/your_username)
+    # Reddit API Raktai
+    REDDIT_CLIENT_ID=jusu_client_id_cia
+    REDDIT_CLIENT_SECRET=jusu_client_secret_cia
+    REDDIT_USER_AGENT=python:nlp-sentiment:v1.0 (by /u/jusu_vartotojo_vardas)
 
-    # Database Config
+    # Duomenų Bazės Konfigūracija
     DB_HOST=localhost
     DB_PORT=3306
     DB_USER=root
@@ -98,37 +98,37 @@ Before starting, ensure you have the following installed on your machine:
     DB_NAME=reddit_db
     DEBUG=True
 
-    # Redis Config
+    # Redis Konfigūracija
     REDIS_HOST=localhost
     REDIS_PORT=6379
     ```
 
-### 2. Database Setup
+### 2. Duomenų Bazės Nustatymas
 
-You need a running MySQL database and Redis instance. The easiest way is to use Docker for just these services, or install them manually.
+Jums reikia veikiančios MySQL duomenų bazės ir Redis egzemplioriaus. Paprasčiausias būdas - naudoti Docker šioms paslaugoms arba įdiegti jas rankiniu būdu.
 
-**Using Docker for DB & Redis (Recommended for Dev):**
-You can run *just* the database and redis from the `docker-compose.yml` if you want to run the app code locally.
+**Naudojant Docker DB ir Redis (Rekomenduojama Kūrimui):**
+Galite paleisti *tik* duomenų bazę ir redis iš `docker-compose.yml`, jei norite paleisti programos kodą lokaliai.
 
 ```bash
 docker-compose up -d mysql-db redis
 ```
 
-**Manual Setup:**
-If you installed MySQL manually:
+**Rankinis Nustatymas:**
+Jei įdiegėte MySQL rankiniu būdu:
 
-1. Create a database named `reddit_db`.
-2. Import the schema from `scripts/schema.sql` (if available) or let the app auto-create tables (the `db_manager.py` handles some schema checks).
+1. Sukurkite duomenų bazę pavadinimu `reddit_db`.
+2. Importuokite schemą iš `scripts/schema.sql` (jei yra) arba leiskite programai automatiškai sukurti lenteles (`db_manager.py` tvarko kai kuriuos schemos patikrinimus).
 
-### 3. Frontend Setup
+### 3. Frontend Nustatymas
 
-1. Navigate to the frontend folder:
+1. Pereikite į frontend aplanką:
 
     ```bash
     cd frontend
     ```
 
-2. Install dependencies:
+2. Įdiekite priklausomybes:
 
     ```bash
     npm install
@@ -136,83 +136,83 @@ If you installed MySQL manually:
 
 ---
 
-## Running the Application
+## Programos Paleidimas
 
-### Option A: Running with Docker (Recommended)
+### A variantas: Paleidimas su Docker (Rekomenduojama)
 
-This runs the entire stack (Database, Backend, Frontend) in containers. This is the **simplest** method to get everything working instantly.
+Tai paleidžia visą sistemą (Duomenų bazę, Backend, Frontend) konteineriuose. Tai **paprasčiausias** būdas viską iškart paleisti.
 
-1. Make sure Docker Desktop is running.
-2. From the root project directory:
+1. Įsitikinkite, kad Docker Desktop veikia.
+2. Iš šakninio projekto katalogo:
 
     ```bash
     docker-compose up --build
     ```
 
-3. Open your browser to: `http://localhost:80` (or just `http://localhost`)
+3. Atidarykite naršyklę adresu: `http://localhost:80` (arba tiesiog `http://localhost`)
 
-### Option B: Running Manually
+### B variantas: Paleidimas Rankiniu Būdu
 
-If you want to edit code and see changes immediately, run components individually.
+Jei norite redaguoti kodą ir iš karto matyti pakeitimus, paleiskite komponentus atskirai.
 
-**1. Start Database & Redis**
-Ensure MySQL and Redis are running (see "Database Setup" above).
+**1. Paleiskite Duomenų Bazę ir Redis**
+Įsitikinkite, kad MySQL ir Redis veikia (žr. "Duomenų Bazės Nustatymas" aukščiau).
 
-**2. Start the API Server**
-Open a terminal in the root folder:
+**2. Paleiskite API Serverį**
+Atidarykite terminalą šakniniame aplanke:
 
 ```bash
-# Activate venv if not active
+# Aktyvuokite venv, jei neaktyvuotas
 .venv\Scripts\activate
 
-# Run the API
+# Paleiskite API
 python run_api.py
 ```
 
-*The API will start on <http://localhost:5000>*
+*API pradės veikti adresu <http://localhost:5000>*
 
-**3. Start the Data Collector**
-Open a **new** terminal in the root folder:
+**3. Paleiskite Duomenų Rinkiklį**
+Atidarykite **naują** terminalą šakniniame aplanke:
 
 ```bash
-# Activate venv
+# Aktyvuokite venv
 .venv\Scripts\activate
 
-# Run collector in poll mode (example)
+# Paleiskite rinkiklį apklausos režimu (pavyzdys)
 python run_collector.py poll --keywords python ai machinelearning
 ```
 
-**4. Start the Frontend**
-Open a **new** terminal in the `frontend` folder:
+**4. Paleiskite Frontend**
+Atidarykite **naują** terminalą `frontend` aplanke:
 
 ```bash
 npm run dev
 ```
 
-*The frontend will start on <http://localhost:5173> (usually)*
+*Frontend paprastai pradės veikti adresu <http://localhost:5173>*
 
 ---
 
-## Project Structure
+## Projekto Struktūra
 
 ```
 NLP-Reddit-Classification/
 ├── app/
-│   ├── api/            # Flask routes
-│   ├── data_collection/ # Reddit PRAW logic
-│   ├── database/       # MySQL database manager
-│   ├── nlp/            # VADER sentiment analyzer
-│   ├── models.py       # Data classes
-│   └── config.py       # Configuration loader
-├── frontend/           # React application
+│   ├── api/            # Flask maršrutai
+│   ├── data_collection/ # Reddit PRAW logika
+│   ├── database/       # MySQL duomenų bazės valdiklis
+│   ├── nlp/            # VADER sentimentų analizatorius
+│   ├── models.py       # Duomenų klasės
+│   └── config.py       # Konfigūracijos įkėliklis
+├── frontend/           # React programa
 │   ├── src/
 │   ├── package.json
 │   └── vite.config.js
-├── scripts/            # SQL scripts
-├── tests/              # Unit tests
-├── run_api.py          # Entry point for API
-├── run_collector.py    # Entry point for Collector
-├── docker-compose.yml  # Docker orchestration
-├── requirements.txt    # Python dependencies
-└── README.md           # This file
+├── scripts/            # SQL skriptai
+├── tests/              # Vienetų testai
+├── run_api.py          # API pradžios taškas
+├── run_collector.py    # Rinkiklio pradžios taškas
+├── docker-compose.yml  # Docker orkestravimas
+├── requirements.txt    # Python priklausomybės
+└── README.md           # Šis failas
 ```
